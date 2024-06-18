@@ -18,13 +18,13 @@ const News = (props) => {
   const updateNews = async () => {
     setLoading(true);
     const { country, category, apiKey, pageSize } = props;
-
+  
     let url = `https://newsapi.org/v2/top-headlines?country=${country}&category=${category}&apiKey=${apiKey}&page=${page}&pageSize=${pageSize}`;
     if (category === 'search') {
       const query = new URLSearchParams(location.search).get('query');
       url = `https://newsapi.org/v2/everything?q=${query}&apiKey=${apiKey}&pageSize=${pageSize}&page=${page}`;
     }
-
+  
     try {
       let data = await fetch(url);
       if (!data.ok) {
@@ -35,13 +35,12 @@ const News = (props) => {
       setTotalResults(parsedData.totalResults || 0);
     } catch (error) {
       console.error('Error fetching news:', error);
-      setArticles([]);
-      setTotalResults(0);
+      // Handle error state or display error message to the user
     } finally {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     document.title = `NewsHub - ${capitalizeFirstLetter(props.category)}`;
     updateNews();
