@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Newsitem from './Newsitem';
+import NewsItem from './Newsitem'; // Ensure the correct import casing
 import Spinner from './Spinner';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
@@ -25,11 +25,21 @@ const News = (props) => {
       url = `https://newsapi.org/v2/everything?q=${query}&apiKey=${apiKey}&pageSize=${pageSize}&page=${page}`;
     }
 
-    let data = await fetch(url);
-    let parsedData = await data.json();
-    setArticles(parsedData.articles);
-    setTotalResults(parsedData.totalResults);
-    setLoading(false);
+    try {
+      let data = await fetch(url);
+      if (!data.ok) {
+        throw new Error('Failed to fetch');
+      }
+      let parsedData = await data.json();
+      setArticles(parsedData.articles || []);
+      setTotalResults(parsedData.totalResults || 0);
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      setArticles([]);
+      setTotalResults(0);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -53,10 +63,10 @@ const News = (props) => {
       </h1>
       {loading && <Spinner />}
       <div className='row mt-5'>
-        {!loading && articles.map((element) => {
+        {!loading && articles.length > 0 && articles.map((element) => {
           return (
             <div className='col-md-4' key={element.url}>
-              <Newsitem
+              <NewsItem
                 title={element.title ? element.title.slice(0, 45) : ""}
                 description={element.description ? element.description.slice(0, 88) : ""}
                 imageUrl={element.urlToImage}
@@ -68,6 +78,7 @@ const News = (props) => {
             </div>
           );
         })}
+        {!loading && articles.length === 0 && <p>No articles found.</p>}
       </div>
       <div className='container d-flex justify-content-between'>
         <button disabled={page <= 1} type="button" className="btn btn-dark" onClick={handlePrevClick}>
